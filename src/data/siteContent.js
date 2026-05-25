@@ -4,7 +4,7 @@ export const siteContent = {
   whatsappNumber: '56934075897',
   whatsappMessage:
     'Hola, quiero cotizar un servicio de transporte o mudanza con Vemuza Transportes.',
-  email: 'contacto@vemuzatransportes.cl',
+  email: 'joseth.alarcon@inversionesvemuza.com',
   serviceArea: 'Servicios dentro y fuera de Santiago para empresas, fletes y mudanzas.',
   hero: {
     badge: 'TRANSPORTE PARA EMPRESAS Y MUDANZAS',
