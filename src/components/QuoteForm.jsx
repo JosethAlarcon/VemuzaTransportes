@@ -1,5 +1,12 @@
+import { useState } from 'react'
 import { SectionHeading } from './SectionHeading'
 import { siteContent } from '../data/siteContent'
+
+function encodeForm(data) {
+  return Object.keys(data)
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
+    .join('&')
+}
 
 function InputField({ label, name, type = 'text', placeholder, required = true }) {
   return (
@@ -17,6 +24,36 @@ function InputField({ label, name, type = 'text', placeholder, required = true }
 }
 
 export function QuoteForm() {
+  const [status, setStatus] = useState('idle')
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setStatus('loading')
+
+    const form = event.currentTarget
+    const formData = new FormData(form)
+    const data = Object.fromEntries(formData.entries())
+
+    try {
+      const response = await fetch('/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: encodeForm(data),
+      })
+
+      if (!response.ok) {
+        throw new Error('No se pudo enviar el formulario')
+      }
+
+      form.reset()
+      setStatus('success')
+    } catch {
+      setStatus('error')
+    }
+  }
+
   return (
     <section id="cotizacion" className="py-10 md:py-14">
       <div className="section-shell">
@@ -34,7 +71,7 @@ export function QuoteForm() {
               </p>
               <div className="mt-5 space-y-4">
                 {[
-                  'Atención personalizada para empresas, mudanzas, fletes y cargas especiales.',
+                  'Atencion personalizada para empresas, mudanzas, fletes y cargas especiales.',
                   'Puntualidad, experiencia y cuidado real en cada traslado.',
                   'Opciones flexibles con ayudantes y servicios dentro o fuera de Santiago.',
                 ].map((step, index) => (
@@ -54,7 +91,7 @@ export function QuoteForm() {
             method="POST"
             data-netlify="true"
             netlify-honeypot="bot-field"
-            action="/"
+            onSubmit={handleSubmit}
             className="card-surface grid gap-5 p-6 md:grid-cols-2 md:p-8"
           >
             <input type="hidden" name="form-name" value="cotizacion-vemuza" />
@@ -126,16 +163,31 @@ export function QuoteForm() {
               />
             </label>
 
-            <div className="md:col-span-2 flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="max-w-md text-sm leading-6 text-[var(--color-muted)]">
-                El formulario queda listo para capturar leads en Netlify sin agregar librerias extras.
-              </p>
-              <button
-                type="submit"
-                className="rounded-full bg-gradient-to-r from-[var(--color-brand-orange)] to-[var(--color-brand-red)] px-7 py-4 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(240,42,0,0.28)] transition hover:-translate-y-0.5"
-              >
-                Enviar solicitud
-              </button>
+            <div className="md:col-span-2 flex flex-col gap-4 pt-2">
+              {status === 'success' ? (
+                <p className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                  Solicitud enviada correctamente. Te responderemos pronto.
+                </p>
+              ) : null}
+
+              {status === 'error' ? (
+                <p className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  Hubo un problema al enviar el formulario. Intenta nuevamente.
+                </p>
+              ) : null}
+
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="max-w-md text-sm leading-6 text-[var(--color-muted)]">
+                  El formulario queda listo para capturar leads en Netlify sin agregar librerias extras.
+                </p>
+                <button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className="rounded-full bg-gradient-to-r from-[var(--color-brand-orange)] to-[var(--color-brand-red)] px-7 py-4 text-sm font-semibold text-white shadow-[0_18px_45px_rgba(240,42,0,0.28)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {status === 'loading' ? 'Enviando...' : 'Enviar solicitud'}
+                </button>
+              </div>
             </div>
           </form>
         </div>
